@@ -1,0 +1,15 @@
+---
+- name: FreedomOps container logs
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Get freedomops-api logs
+      ansible.builtin.command:
+        cmd: podman logs --tail 50 freedomops-api
+      register: container_logs
+      changed_when: false
+
+    - name: Display container logs
+      ansible.builtin.debug:
+        msg: "{{ container_logs.stdout }}"

@@ -1,0 +1,15 @@
+---
+- name: FreedomOps container metrics
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Get container metrics
+      ansible.builtin.shell:
+        cmd: 'podman stats --no-stream --format "Container={{"{{"}}.Name{{"}}"}} CPU={{"{{"}}.CPUPerc{{"}}"}} Memory={{"{{"}}.MemUsage{{"}}"}} MemoryPercent={{"{{"}}.MemPerc{{"}}"}} Network={{"{{"}}.NetIO{{"}}"}} BlockIO={{"{{"}}.BlockIO{{"}}"}} PIDs={{"{{"}}.PIDS{{"}}"}}" freedomops-api'
+      register: container_stats
+      changed_when: false
+
+    - name: Display container metrics
+      ansible.builtin.debug:
+        msg: "{{ container_stats.stdout }}"

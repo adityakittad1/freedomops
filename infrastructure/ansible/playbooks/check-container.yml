@@ -1,0 +1,15 @@
+---
+- name: FreedomOps container status
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Get freedomops-api container status
+      ansible.builtin.command:
+        cmd: podman ps -a --filter name=freedomops-api
+      register: container_status
+      changed_when: false
+
+    - name: Display container status
+      ansible.builtin.debug:
+        msg: "{{ container_status.stdout }}"

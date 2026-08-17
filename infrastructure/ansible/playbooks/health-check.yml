@@ -1,0 +1,18 @@
+---
+- name: FreedomOps application health check
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Check application health
+      ansible.builtin.uri:
+        url: http://localhost:8080
+        method: GET
+        return_content: true
+        status_code: 200
+      register: health_check
+      changed_when: false
+
+    - name: Display application health
+      ansible.builtin.debug:
+        msg: "Application is healthy: {{ health_check.content }}"
