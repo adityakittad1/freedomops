@@ -1,0 +1,8 @@
+---
+- name: Test FreedomOps Ansible connectivity
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Verify Ansible can reach the host
+      ansible.builtin.ping:

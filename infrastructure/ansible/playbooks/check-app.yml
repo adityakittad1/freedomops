@@ -1,0 +1,15 @@
+---
+- name: Check FreedomOps application
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Check freedomops-api container
+      ansible.builtin.command:
+        cmd: podman ps -a --filter name=freedomops-api
+      register: container_status
+      changed_when: false
+
+    - name: Show container status
+      ansible.builtin.debug:
+        var: container_status.stdout

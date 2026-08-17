@@ -1,0 +1,29 @@
+---
+- name: Recover FreedomOps application
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Check freedomops-api container
+      ansible.builtin.command:
+        cmd: podman ps -a --filter name=freedomops-api
+      register: container_status
+      changed_when: false
+
+    - name: Show current container status
+      ansible.builtin.debug:
+        msg: "{{ container_status.stdout }}"
+
+    - name: Start freedomops-api
+      ansible.builtin.command:
+        cmd: podman start freedomops-api
+      when: "'Up' not in container_status.stdout"
+
+    - name: Wait for application
+      ansible.builtin.pause:
+        seconds: 2
+
+    - name: Verify application health
+      ansible.builtin.uri:
+        url: http://localhost:8080
+        status_code: 200
