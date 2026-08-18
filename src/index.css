@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg-base text-text-primary font-sans antialiased;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-base;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-bg-borderLight;
+  }
+
+  ::selection {
+    background: rgba(99, 102, 241, 0.3);
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-1 ring-offset-bg-base;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-bg-panel border border-bg-border rounded-xl;
+  }
+
+  .status-dot-running {
+    @apply w-2 h-2 rounded-full bg-success inline-block;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  }
+
+  .status-dot-stopped {
+    @apply w-2 h-2 rounded-full bg-danger inline-block;
+  }
+
+  .status-dot-warning {
+    @apply w-2 h-2 rounded-full bg-warning inline-block;
+  }
+
+  .badge-read {
+    @apply text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-info-dim text-info border border-info-border uppercase tracking-wider;
+  }
+
+  .badge-write {
+    @apply text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-warning-dim text-warning border border-warning-border uppercase tracking-wider;
+  }
+
+  .badge-success {
+    @apply text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-success-dim text-success border border-success-border uppercase tracking-wider;
+  }
+
+  .badge-failed {
+    @apply text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-danger-dim text-danger border border-danger-border uppercase tracking-wider;
+  }
+
+  .badge-approval {
+    @apply text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-warning-dim text-warning border border-warning-border uppercase tracking-wider;
+  }
+
+  .terminal-surface {
+    @apply bg-bg-base border border-bg-border rounded-lg font-mono text-sm;
+  }
+}
+
+@layer utilities {
+  .text-gradient-brand {
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .animate-message-in {
+    animation: messageIn 0.2s ease-out;
+  }
+
+  @keyframes messageIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
