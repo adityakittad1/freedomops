@@ -285,7 +285,7 @@ diagnose_application)
 
     LOGS=$(podman logs --tail 20 "$CONTAINER" 2>&1 || true)
 
-    if curl -fsS http://localhost:8080 >/tmp/freedomops-diagnosis-health.txt 2>/dev/null; then
+    if curl -fsS http://127.0.0.1:8080 >/tmp/freedomops-diagnosis-health.txt 2>/dev/null; then
         HEALTH_STATUS="healthy"
         HEALTH_RESPONSE=$(cat /tmp/freedomops-diagnosis-health.txt)
     else
