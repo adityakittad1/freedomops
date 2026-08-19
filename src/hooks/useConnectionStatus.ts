@@ -23,7 +23,7 @@ export interface SystemConnectionStatus {
   refresh: () => void;
 }
 
-const HEALTH_ENDPOINT = `${API_BASE}/health`;
+const HEALTH_ENDPOINT = `${API_BASE}/api/health`;
 
 export function useConnectionStatus(): SystemConnectionStatus {
   const [backend, setBackend] = useState<ConnectionState>('connecting');
