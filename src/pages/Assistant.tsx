@@ -120,20 +120,28 @@ export default function Assistant() {
       setLoading(false);
       setMessages((p) => [...p, ...newMessages]);
 
-      // Check if any message has a diagnosis with an action (needs approval)
+      // Server-enforced approval gate: if any message carries an approvalRequest
+      // from /api/chat, surface the approval dialog immediately.
+      const withApproval = newMessages.find((m) => m.approvalRequest);
+      if (withApproval?.approvalRequest) {
+        setApproval(withApproval.approvalRequest);
+      }
+
+      // Mock demo path: check for diagnosis-driven approval
       const withDiagnosis = newMessages.find((m) => m.diagnosis?.actionTool);
       if (withDiagnosis) {
         setPendingApprovalMsgId(withDiagnosis.id);
       }
-    } catch {
+    } catch (err) {
       clearInterval(li);
       setLoading(false);
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       setMessages((p) => [
         ...p,
         {
           id: uid(),
           role: 'assistant',
-          content: 'Failed to reach the FreedomOps backend. Check that FastAPI and Ollama are running.',
+          content: `Failed to reach the FreedomOps backend. Check that FastAPI and Ollama are running.\n\n_${msg}_`,
           status: 'error',
           timestamp: Date.now(),
         },
@@ -150,11 +158,11 @@ export default function Assistant() {
     setApprovalLoading(true);
 
     try {
-      // Add APPROVAL_REQUESTED marker message
+      // Show optimistic "in-progress" message in the chat
       const approvedMsg: ChatMessage = {
         id: uid(),
         role: 'assistant',
-        content: '✓ Restart approved. Executing restart_application...',
+        content: `✓ Restart approved. Sending to POST /api/approve — executing \`${approval.tool}\` on \`${approval.container}\`...`,
         status: 'complete',
         timestamp: Date.now(),
         toolExecutions: [
@@ -167,11 +175,23 @@ export default function Assistant() {
       };
       setMessages((p) => [...p, approvedMsg]);
 
+      // POST /api/approve — the ONLY server path that executes restart
       const { messages: recoveryMsgs } = await confirmApproval(approval.tool, approval.container);
       setMessages((p) => [...p, ...recoveryMsgs]);
       setApproval(null);
       setPendingApprovalMsgId(null);
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setMessages((p) => [
+        ...p,
+        {
+          id: uid(),
+          role: 'assistant',
+          content: `**Restart failed.** The approval request was rejected by the server.\n\n_${msg}_`,
+          status: 'error',
+          timestamp: Date.now(),
+        },
+      ]);
       setApproval(null);
     } finally {
       setApprovalLoading(false);

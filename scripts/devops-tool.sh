@@ -339,6 +339,9 @@ restart_application)
         exit 1
     fi
 
+    podman restart "$CONTAINER" >/dev/null 2>&1
+    sleep 2
+
     STATUS=$(podman inspect "$CONTAINER" \
         --format '{{.State.Status}}' 2>/dev/null || true)
 
@@ -347,10 +350,9 @@ restart_application)
     printf '  "tool": "restart_application",\n'
     printf '  "container": "%s",\n' "$CONTAINER"
     printf '  "operation": "write",\n'
-    printf '  "approval_required": true,\n'
     printf '  "data": {\n'
     printf '    "current_status": "%s",\n' "$STATUS"
-    printf '    "action": "restart"\n'
+    printf '    "action": "restarted"\n'
     printf '  },\n'
     printf '  "error": null\n'
     printf '}\n'
