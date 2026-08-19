@@ -1,9 +1,14 @@
+import os
 from ollama import Client
 
+MODEL = "qwen3"
 
-MODEL = "qwen3:latest"
+OLLAMA_URL = os.environ.get(
+    "OLLAMA_URL",
+    "http://127.0.0.1:11434"
+)
 
-client = Client(host="http://127.0.0.1:11434")
+client = Client(host=OLLAMA_URL)
 
 
 def ask_ollama(prompt: str) -> str:
