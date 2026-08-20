@@ -17,7 +17,6 @@
  * Update the URL below to match your active Cloudflare tunnel.
  */
 window.__FREEDOMOPS_CONFIG__ = {
-  // Replace with your current active Cloudflare tunnel URL.
-  // Leave as empty string to use relative /api/* paths (requires a reverse proxy).
-  apiBase: '',
+  // Active Cloudflare Quick Tunnel — update this when the tunnel URL changes.
+  apiBase: 'https://platform-behalf-forward-eden.trycloudflare.com',
 };
