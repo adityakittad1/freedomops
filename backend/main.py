@@ -35,10 +35,31 @@ class ApproveRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
+    """
+    Health probe used by the frontend connection indicator.
+
+    Returns:
+      status  : "ok"
+      message : human-readable description
+      ollama  : bool — whether Ollama is reachable right now
+      model   : str  — the configured model name (e.g. "qwen3")
+    """
+    from backend.ai.ollama_client import client, MODEL
+    ollama_ok = False
+    try:
+        # Lightweight list call — does not run inference
+        client.list()
+        ollama_ok = True
+    except Exception:
+        ollama_ok = False
+
     return {
         "status": "ok",
-        "message": "FreedomOps backend is running"
+        "message": "FreedomOps backend is running",
+        "ollama": ollama_ok,
+        "model": MODEL,
     }
+
 
 
 @app.post("/api/chat")

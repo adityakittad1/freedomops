@@ -2,13 +2,10 @@
  * Connection status hook — tracks whether the FreedomOps backend is reachable.
  *
  * In mock mode: always returns a stable "connected" state (mock doesn't need a backend).
- * In real mode: probes the backend health endpoint on mount and on manual refresh.
+ * In real mode: probes GET /api/health on mount and every 30 seconds.
  *
- * ─── INTEGRATION NOTE ─────────────────────────────────────────────────────────
- * When Sakshi's FastAPI backend adds GET /health, update `HEALTH_ENDPOINT` and
- * remove the `USE_MOCK` short-circuit below. The endpoint should return:
- *   { status: "ok", ollama: boolean, model: string }
- * ─────────────────────────────────────────────────────────────────────────────
+ * Health response shape (from backend/main.py):
+ *   { status: "ok", message: string, ollama: boolean, model: string }
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -19,6 +16,7 @@ export type ConnectionState = 'connected' | 'connecting' | 'offline' | 'error';
 export interface SystemConnectionStatus {
   backend: ConnectionState;
   ollama: ConnectionState;
+  model: string | null;
   lastChecked: number | null;
   refresh: () => void;
 }
@@ -28,6 +26,7 @@ const HEALTH_ENDPOINT = `${API_BASE}/api/health`;
 export function useConnectionStatus(): SystemConnectionStatus {
   const [backend, setBackend] = useState<ConnectionState>('connecting');
   const [ollama, setOllama] = useState<ConnectionState>('connecting');
+  const [model, setModel] = useState<string | null>(null);
   const [lastChecked, setLastChecked] = useState<number | null>(null);
 
   const check = useCallback(async () => {
@@ -35,6 +34,7 @@ export function useConnectionStatus(): SystemConnectionStatus {
       // Mock mode: simulate a healthy connection without making real network requests
       setBackend('connected');
       setOllama('connected');
+      setModel('qwen3');
       setLastChecked(Date.now());
       return;
     }
@@ -43,12 +43,14 @@ export function useConnectionStatus(): SystemConnectionStatus {
     setBackend('connecting');
     setOllama('connecting');
     try {
-      const res = await fetch(HEALTH_ENDPOINT, { signal: AbortSignal.timeout(4000) });
+      const res = await fetch(HEALTH_ENDPOINT, { signal: AbortSignal.timeout(6000) });
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         setBackend('connected');
-        // If backend reports ollama status, use it; otherwise assume connected
+        // data.ollama: boolean from /api/health
         setOllama(data?.ollama === false ? 'offline' : 'connected');
+        // data.model: "qwen3" etc.
+        if (data?.model) setModel(data.model as string);
       } else {
         setBackend('error');
         setOllama('error');
@@ -70,5 +72,5 @@ export function useConnectionStatus(): SystemConnectionStatus {
     }
   }, [check]);
 
-  return { backend, ollama, lastChecked, refresh: check };
+  return { backend, ollama, model, lastChecked, refresh: check };
 }

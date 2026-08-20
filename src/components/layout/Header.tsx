@@ -7,7 +7,7 @@ import { USE_MOCK } from '../../api/client';
 import { cn } from '../../utils';
 
 function ConnectionBadge() {
-  const { backend, ollama, refresh } = useConnectionStatus();
+  const { backend, refresh } = useConnectionStatus();
 
   const isConnected = backend === 'connected';
   const isConnecting = backend === 'connecting';
@@ -41,7 +41,7 @@ function ConnectionBadge() {
 }
 
 export function Header() {
-  const { backend, ollama } = useConnectionStatus();
+  const { backend, ollama, model } = useConnectionStatus();
 
   return (
     <header className="h-14 bg-bg-surface border-b border-bg-border flex items-center justify-between px-5 flex-shrink-0">
@@ -49,7 +49,9 @@ export function Header() {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold tracking-widest text-text-primary uppercase">FreedomOps</span>
-          <span className="text-xs px-1.5 py-0.5 rounded bg-bg-elevated border border-bg-border text-text-muted font-mono">LOCAL</span>
+          <span className="text-xs px-1.5 py-0.5 rounded bg-bg-elevated border border-bg-border text-text-muted font-mono">
+            {USE_MOCK ? 'MOCK' : 'LIVE'}
+          </span>
         </div>
 
         <div className="hidden md:flex items-center gap-3 text-xs text-text-muted">
@@ -69,7 +71,7 @@ export function Header() {
             <span className={cn(
               'font-medium',
               ollama === 'connected' ? 'text-text-secondary' : 'text-text-muted'
-            )}>Qwen3</span>
+            )}>{model ?? 'Qwen3'}</span>
             <span className="text-bg-border">/</span>
             <span className={ollama === 'connected' ? '' : 'opacity-50'}>Ollama</span>
           </div>

@@ -13,6 +13,10 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Runtime config: served as a static file (not bundled by Vite).
+         Update public/config.js or VITE_API_BASE_URL in Vercel env vars
+         to change the backend URL without a full rebuild. -->
+    <script src="/config.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
