@@ -18,5 +18,5 @@
  */
 window.__FREEDOMOPS_CONFIG__ = {
   // Active Cloudflare Quick Tunnel — update this when the tunnel URL changes.
-  apiBase: 'https://platform-behalf-forward-eden.trycloudflare.com',
+  apiBase: 'https://prediction-decisions-efficiently-sizes.trycloudflare.com',
 };
