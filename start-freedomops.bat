@@ -11,6 +11,8 @@ set "STATUS_OLLAMA=ERROR"
 set "STATUS_QWEN3=ERROR"
 set "STATUS_PODMAN=ERROR"
 set "STATUS_FASTAPI=ERROR"
+set "STATUS_TUNNEL=NOT DETECTED"
+set "ACTIVE_TUNNEL_URL="
 
 :: 1. Check Ollama
 echo [1/5] Checking Ollama on Windows...
@@ -143,6 +145,40 @@ if "%OLLAMA_WSL%"=="0" (
     set "STATUS_QWEN3=AVAILABLE"
 )
 
+:: 6. Auto-detect Cloudflare tunnel and update Vercel config
+echo [6/6] Detecting active Cloudflare tunnel and syncing Vercel config...
+set "TUNNEL_DETECTED=0"
+for /f "usebackq tokens=*" %%i in (`wsl -d FedoraLinux-44 -e bash -c "ss -ltnp 2>/dev/null | grep cloudflared | grep -oP '127\.0\.0\.1:\K\d+' | head -1"`) do set "METRICS_PORT=%%i"
+if defined METRICS_PORT (
+    for /f "usebackq tokens=*" %%i in (`wsl -d FedoraLinux-44 -e bash -c "curl -s --max-time 2 http://127.0.0.1:!METRICS_PORT!/quicktunnel 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\"hostname\",\"\"))' 2>/dev/null || echo """`) do set "TUNNEL_HOST=%%i"
+    if defined TUNNEL_HOST (
+        set "ACTIVE_TUNNEL_URL=https://!TUNNEL_HOST!"
+        echo Detected tunnel: !ACTIVE_TUNNEL_URL!
+        :: Verify it responds
+        for /f "usebackq tokens=*" %%s in (`wsl -d FedoraLinux-44 -e bash -c "curl -s -o /dev/null -w '%{http_code}' --max-time 6 https://!TUNNEL_HOST!/api/health 2>/dev/null || echo 000"`) do set "TUNNEL_HTTP=%%s"
+        if "!TUNNEL_HTTP!"=="200" (
+            echo Tunnel is live ^(HTTP 200^).
+            set "TUNNEL_DETECTED=1"
+            set "STATUS_TUNNEL=LIVE:  !ACTIVE_TUNNEL_URL!"
+            :: Run the auto-update script to push config.js if URL changed
+            wsl -d FedoraLinux-44 -e bash /mnt/c/Users/adity/freedomops/scripts/update-tunnel-config.sh
+            if !errorlevel! equ 0 (
+                echo Vercel config.js updated and pushed.
+            ) else (
+                echo WARNING: update-tunnel-config.sh encountered an issue.
+            )
+        ) else (
+            echo WARNING: Tunnel detected but returned HTTP !TUNNEL_HTTP! - may still be starting.
+            set "STATUS_TUNNEL=DETECTED BUT HTTP !TUNNEL_HTTP!"
+        )
+    ) else (
+        echo WARNING: cloudflared is running but could not extract tunnel hostname.
+    )
+) else (
+    echo WARNING: No cloudflared process found.
+    echo Start the tunnel with: cloudflared tunnel --url http://127.0.0.1:8000
+)
+
 :print_summary
 echo.
 echo ========================================
@@ -153,17 +189,20 @@ echo Ollama:       %STATUS_OLLAMA%
 echo Qwen3:        %STATUS_QWEN3%
 echo Podman API:   %STATUS_PODMAN%
 echo FastAPI:      %STATUS_FASTAPI%
+echo Tunnel:       %STATUS_TUNNEL%
 echo.
 echo Local Backend:
-echo http://127.0.0.1:8000
+echo   http://127.0.0.1:8000/api/health
 echo.
-echo Application:
-echo http://127.0.0.1:8080
+echo Application Container:
+echo   http://127.0.0.1:8080
+echo.
+echo Deployed Frontend:
+echo   https://freedomops.vercel.app/app/assistant
 echo.
 echo No duplicate processes.
 echo No duplicate containers.
 echo No unnecessary restarts.
 echo.
-echo You may now run the frontend using 'npm run dev'
-echo Press any key to exit this launcher...
+echo Press any key to close this launcher...
 pause >nul
