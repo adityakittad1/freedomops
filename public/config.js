@@ -18,5 +18,5 @@
  */
 window.__FREEDOMOPS_CONFIG__ = {
   // Active Cloudflare Quick Tunnel — update this when the tunnel URL changes.
-  apiBase: 'https://prediction-decisions-efficiently-sizes.trycloudflare.com',
+  apiBase: 'https://pregnancy-ridge-wav-sitemap.trycloudflare.com',
 };
